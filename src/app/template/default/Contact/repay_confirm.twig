@@ -1,0 +1,96 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% form_theme form 'Form/form_div_layout.twig' %}
+
+{% block main %}
+    <div class="ec-contactConfirmRole">
+        <div class="ec-pageHeader">
+            {% if is_mobile %}
+                <h1>{{ '弁済情報通知用
+                メールアドレス確認'|trans|nl2br }}</h1>
+            {% else %}
+                <h1>{{ '弁済情報通知用メールアドレス確認'|trans }}</h1>
+            {% endif %}
+        </div>
+        <div class="ec-off3Grid">
+            <div class="ec-off3Grid__cell">
+                <form method="post" action="{{ url('contact_repay') }}" class="h-adr">
+                    {{ form_widget(form._token) }}
+                    <p class="ec-para-normal">{{ 'ご入力いただいたメールアドレスに弁済いただく、タブレットもしくは付属品のご案内を差し上げます。下記入力フォームに送受信可能なメールアドレスを入力いただき、送信してください。学校側から共有いただく、氏名などの情報と照合し、追って通知させていただきます。
+                    '|trans|nl2br }}</p>
+                    <div class="ec-borderedDefs">
+                        <dl>
+                            <dt class="repay-confirm">
+                                {{ form_label(form.name, 'お名前', { 'label_attr': { 'class': 'ec-label '}}) }}
+                            </dt>
+                            <dd class="repay-confirm">
+                                　
+                                {{ form.name.name01.vars.data }}
+                                {{ form.name.name02.vars.data }}
+                                {{ form_widget(form.name.name01, { type : 'hidden' }) }}
+                                {{ form_widget(form.name.name02, { type : 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl class="repay-confirm">
+                            <dt class="repay-confirm">
+                                {{ form_label(form.email, 'メールアドレス', {'label_attr': {'class': 'ec-label'}}) }}
+                            </dt>
+                            <dd class="repay-confirm">
+                                　
+                                {{ form.email.vars.data }}
+                                {{ form_widget(form.email.first, { type : 'hidden' }) }}
+                                {{ form_widget(form.email.second, { type : 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        {# エンティティ拡張の自動出力 #}
+                        {% for f in form|filter(f => f.vars.eccube_form_options.auto_render) %}
+                            {% if f.vars.eccube_form_options.form_theme %}
+                                {% form_theme f f.vars.eccube_form_options.form_theme %}
+                                {{ form_row(f) }}
+                            {% else %}
+                                <dl>
+                                    <dt>
+                                        {% set label_class =  f.vars.label_attr.class is defined ? f.vars.label_attr.class : '' %}
+                                        {{ form_label(f, f.vars.label, { 'label_attr': {'class': label_class ~ ' ec-label' }}) }}
+                                    </dt>
+                                    <dd>
+                                        <div class="{{ f.vars.eccube_form_options.style_class }}{{ has_errors(f) ? ' error' }}">
+                                            {{ f.vars.data }}
+                                            {{ form_widget(f, { type: 'hidden'}) }}
+                                        </div>
+                                    </dd>
+                                </dl>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="ec-RegisterRole__actions">
+                        <div class="ec-off4Grid">
+                            <div class="ec-off4Grid__cell">
+                                <button type="submit"
+                                        class="ec-blockBtn--action"
+                                        name="mode"
+                                        value="complete">{{ '送信'|trans }}
+                                </button>
+                                <button type="submit"
+                                        class="ec-blockBtn--cancel"
+                                        name="mode"
+                                        value="back">{{ '戻る'|trans }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

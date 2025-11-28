@@ -1,0 +1,59 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% form_theme form 'Form/form_div_layout.twig' %}
+
+{% block main %}
+    <div class="ec-pageHeader">
+        <h1>{{ '本人認証情報入力'|trans }}</h1>
+    </div>
+    <div class="ec-forgotRole">
+        <form name="form1" id="form1" method="post" action="{{ url('forgot_info') }}">
+            {{ form_widget(form._token) }}
+            <div class="ec-off2Grid">
+                <div class="ec-off2Grid__cell">
+                    <div class="ec-forgotRole__form">
+                        <div class="ec-forgotRole__intro">
+                            <p class="ec-para-normal">{{ '事前に事務局にお送りいただいたメールアドレスをご入力いただき、本人認証を
+                            おこなってください。[認証メールを送る]ボタンを押した後、メールアドレスに
+                            届く認証メールの番号をご確認いただき、次の画面でご入力ください。
+                            '|trans|nl2br }}</p>
+                        </div>
+                        <div class="ec-borderedDefs">
+                            <dl>
+                                <dt>
+                                    {{ form_label(form.login_email, 'メールアドレス', { 'label_attr': { 'class': 'ec-label' }}) }}
+                                </dt>
+                                <dd>
+                                    <div class="ec-input{{ has_errors(form.login_email) ? ' error' }}">
+                                        {{ form_widget(form.login_email) }}
+                                        {{ form_errors(form.login_email) }}
+                                        {% if error %}
+                                            <p class="ec-errorMessage">{{ error }}</p>
+                                        {% endif %}
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ec-off4Grid">
+                <div class="ec-off4Grid__cell">
+                    <button type="submit" class="ec-blockBtn--action">{{ '認証メールを送る'|trans }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+

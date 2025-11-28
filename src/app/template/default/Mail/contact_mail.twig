@@ -1,0 +1,31 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% autoescape 'safe_textmail' %}
+※本メールは自動配信メールです。
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+　※本メールは、
+　{{ BaseInfo.shop_name }}より送信された方に
+　お送りしています。
+　もしお心当たりが無い場合は、
+　その旨 {# 問い合わせ受付メール #}{{ BaseInfo.email02 }} まで
+　ご連絡いただければ幸いです。
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+{{ data.name01 }} 様
+
+以下の内容にて弁済情報通知用メールアドレス確認を受付致しました。
+学校側から共有いただく、氏名などの情報と照合し、追って通知させていただきます。
+
+お名前：{{ data.name01 }} 様
+メールアドレス：{{ data.email }}
+
+{% endautoescape  %}

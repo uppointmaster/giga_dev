@@ -1,0 +1,35 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% set body_class = 'registration_page' %}
+
+{% block main %}
+    <div class="ec-role">
+        <div class="ec-pageHeader">
+            <h1>{{ '個人情報入力完了'|trans }}</h1>
+        </div>
+    </div>
+    <div class="ec-registerCompleteRole">
+       <div class="ec-off3Grid ec-text-ac">
+            <div class="ec-off3Grid__cell">
+
+                <p class="ec-reportDescription">{{ '個人情報の登録が完了しました。
+                下記のボタンを押して弁済内容をご確認ください。
+                '|trans|nl2br }}</p>
+
+            </div>
+        </div>
+        <div class="ec-off4Grid">
+            <div class="ec-off4Grid__cell"><a class="ec-blockBtn--cancel" href="{{ url('cart') }}">{{ '弁済内容を見る'|trans }}</a></div>
+        </div>
+    </div>
+{% endblock %}

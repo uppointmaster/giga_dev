@@ -1,0 +1,66 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% form_theme form 'Form/form_div_layout.twig' %}
+
+{% block main %}
+    <div class="ec-registerRole">
+        <div class="ec-pageHeader">
+            <h1>{{ 'パスワードの再設定'|trans }}</h1>
+        </div>
+        <div class="ec-off1Grid">
+            <div class="ec-off1Grid__cell">
+                <form id="form1" method="post" novalidate>
+                    {{ form_widget(form._token) }}
+                    <div class="ec-forgotRole__intro" align="center">
+                        <p class="ec-para-normal">{{ '新しいパスワードをご入力いただき、パスワードの再設定を完了させてください。'|trans }}</p>
+                        <p class="ec-para-normal">{{ '　'|trans }}</p>
+                    </div>
+                    <div class="ec-borderedDefs">
+                        {{ form_widget(form.login_email, { type : 'hidden' }) }}
+                        <dl>
+                            <dt>
+                                {{ form_label(form.password, '新しいパスワード', { 'label_attr': {'class': 'ec-label' }}) }}<br>
+                                <br>
+                                {{ form_label(form.password, '新しいパスワード確認用', { 'label_attr': {'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                <div class="ec-input{{ has_errors(form.password.first) ? ' error' }}">
+                                    {{ form_widget(form.password.first, {
+                                        'attr': { 'placeholder': '半角英数記号%min%〜%max%文字'|trans({ '%min%': eccube_config.eccube_password_min_len, '%max%': eccube_config.eccube_password_max_len }) },
+                                        'type': 'password'
+                                    }) }}
+                                    {{ form_errors(form.password.first) }}
+                                </div>
+                                <div class="ec-input{{ has_errors(form.password.second) ? ' error' }}">
+                                    {{ form_widget(form.password.second, {
+                                        'attr': { 'placeholder': '確認のためもう一度入力してください'|trans },
+                                        'type': 'password'
+                                    }) }}
+                                    {{ form_errors(form.password.second) }}
+                                </div>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="ec-registerRole__actions">
+                        <div class="ec-off4Grid">
+                            <div class="ec-off4Grid__cell">
+                                <button class="ec-blockBtn--action" type="submit">{{ '新しいパスワードを設定'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  eccube:
+    build:
+      context: .
+    ports:
+       - 8080:80
+    volumes:
+      - "./src/:/var/www/html/"
+    environment:
+      - APP_ENV=dev
+      - APP_DEBUG=1
+      - DATABASE_URL=mysql://test:test@mysql/eccubedb
+      - ECCUBE_AUTH_MAGIC=9PPlChzvaH6vbMbIUKeuTesHycQQMuaB
+      - ECCUBE_ADMIN_ALLOW_HOSTS=[]
+      - ECCUBE_FORCE_SSL=0
+      - ECCUBE_ADMIN_ROUTE=manager
+      - ECCUBE_COOKIE_PATH=/
+      - MAILER_DSN=smtp://mailcatcher:1025
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=eccubedb
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    links:
+      - mysql
+    ports:
+      - 4040:80
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - '1080:1080'
+      - '1025:1025'

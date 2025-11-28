@@ -1,0 +1,15 @@
+<div id="ec-grid2__cell-email" class="ec-grid2__cell" style="display: none">
+    <p><b>メール認証</b></p>
+    <p>会員登録のメールアドレスにトークンを送信します。</p>
+</div>
+<script>
+{% if smsEnabled == false %}
+$('.ec-login-description > div > .ec-grid2__cell').eq(1).remove()
+{% endif %}
+{% if appEnabled == false %}
+$('.ec-login-description > div > .ec-grid2__cell').eq(0).remove()
+{% endif %}
+$('#ec-grid2__cell-email').appendTo($('.ec-login-description > div')).show();
+
+
+</script>

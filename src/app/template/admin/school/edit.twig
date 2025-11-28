@@ -1,0 +1,191 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['school'] %}
+
+{% block title %}{{ 'admin.school.school_management'|trans }}{% endblock %}
+{% block sub_title %}{{ 'admin.school_edit'|trans }}{% endblock %}
+
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block stylesheet %}{% endblock stylesheet %}
+
+{% block javascript %}
+    <script>
+        $(document).on('drop dragover', function(e) {
+            e.preventDefault();
+        });
+
+        $(function() {
+            // ファイルアップロード
+            // see https://pqina.nl/filepond/
+            var inputFileElement = document.querySelector('input[type=file]');
+            {% if eccube_config.locale == 'ja' or eccube_config.locale == 'en' %}
+            FilePond.setOptions(FilePondLocale_{{ eccube_config.locale }});
+            {% endif %}
+            FilePond.setOptions({
+                server: {
+                    process: {
+                        url: '{{ path('admin_school_image_process') }}',
+                        headers: {
+                            'ECCUBE-CSRF-TOKEN': $('meta[name="eccube-csrf-token"]').attr('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    },
+                    load: {
+                        url: '{{ path('admin_school_image_load') }}?source=',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    },
+                    revert: {
+                        url: '{{ path('admin_school_image_revert') }}',
+                        headers: {
+                            'ECCUBE-CSRF-TOKEN': $('meta[name="eccube-csrf-token"]').attr('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }
+                }
+            });
+            var pond = FilePond.create(inputFileElement, {
+                allowFileTypeValidation: true,
+                acceptedFileTypes: [
+                    'image/gif',
+                    'image/png',
+                    'image/jpeg'
+                ],
+                allowFileSizeValidation: true,
+                maxFileSize: 10000000,
+                allowBrowse: true,
+                allowDrop: true,
+                allowReorder: true,
+                labelIdle: '<i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true" style="font-size: 40px"></i>{{ 'admin.common.drag_and_drop_image_description'|trans }}<span class="filepond--label-action">{{ 'admin.common.file_select'|trans }}</span>',
+                styleItemPanelAspectRatio: 0.5625,
+                files: [
+                    {% if form.filename.vars.value is not empty %}
+                    {
+                        source: '{{ form.filename.vars.value }}',
+                        options: {
+                            type: 'local'
+                        }
+                    },
+                    {% endif %}
+                ]
+            });
+      });
+    </script>
+{% endblock javascript %}
+
+{% block main %}
+    <form role="form" method="post">
+
+        {{ form_widget(form._token) }}
+
+        <div class="c-contentsArea__cols">
+            <div class="c-contentsArea__primaryCol">
+                <div class="c-primaryCol">
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header"><span>{{ 'admin.school_edit'|trans }}</span></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-3"><span>{{ 'admin.school.name'|trans }}</span>
+                                  <span class="inline-block badge bg-primary ml-1">{{ 'admin.common.required'|trans }}</span></div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.name) }}
+                                    {{ form_errors(form.name) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3">
+                                    <span>{{ 'admin.school.image'|trans }}</span>
+                                  </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.image) }}
+                                    {{ form_errors(form.image) }}
+                                    {{ form_widget(form.filename) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-3"><span>{{ 'admin.school.address'|trans }}</span></div>
+                                <div class="col mb-2">
+                                    <div class="mb-3">
+                                        <div class="row justify-content-start">
+                                            <div class="col-auto pe-0 align-self-center"><span>{{ 'admin.common.postal_symbol'|trans }}</span></div>
+                                            <div class="col">
+                                                {{ form_widget(form.postal_code) }}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                {{ form_errors(form.postal_code) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row justify-content-start">
+                                            <div class="col-auto pe-0 align-self-center"><span>{{ 'admin.school.pref'|trans }}</span></div>
+                                            <div class="col">
+                                                {{ form_widget(form.address.pref) }}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                {{ form_errors(form.address.pref) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row justify-content-start">
+                                            <div class="col-auto pe-0 align-self-center"><span>{{ 'admin.school.address_01'|trans }}</span></div>
+                                            <div class="col">
+                                                {{ form_widget(form.address.addr01, { attr : { placeholder : 'admin.common.address_sample_01' }} ) }}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                {{ form_errors(form.address.addr01) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row justify-content-start">
+                                            <div class="col-auto pe-0 align-self-center"><span>{{ 'admin.school.address_02'|trans }}</span></div>
+                                            <div class="col">
+                                                {{ form_widget(form.address.addr02, { attr : { placeholder : 'admin.common.address_sample_02' }}) }}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                {{ form_errors(form.address.addr02) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-conversionArea">
+            <div class="c-conversionArea__container">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-6">
+                        <div class="row align-items-center justify-content-end pt-3">
+                            <div class="col-auto">
+                                <a class="btn btn-ec-sub px-5"
+                                   href="{{ url('admin_school') }}"
+                                   >{{ 'admin.common.back'|trans }}</a>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-ec-conversion px-5"
+                                        type="submit">{{ 'admin.common.save'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

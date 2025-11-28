@@ -1,0 +1,191 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% set body_class = 'registration_page' %}
+
+{% form_theme form 'Form/form_div_layout.twig' %}
+
+{% block javascript %}
+    <script src="//yubinbango.github.io/yubinbango/yubinbango.js" charset="UTF-8"></script>
+{% endblock javascript %}
+
+{% block main %}
+    <div class="ec-pageHeader">
+        {% if is_mobile %}
+            <h1>{{ '個人情報入力
+            (パスワード設定)'|trans|nl2br }}</h1>
+        {% else %}
+            <h1>{{ '個人情報入力(パスワード設定)'|trans|nl2br }}</h1>
+        {% endif %}
+    </div>
+    <div class="ec-forgotRole">
+        <div class="ec-off2Grid">
+            <div class="ec-off2Grid__cell">
+                <form method="post" action="{{ url('forgot_entry') }}" novalidate class="h-adr">
+                    <input type="hidden" name="key" id="reset_key" value="{{ reset_key }}" />  
+                    <center>
+                    <span class="p-country-name" style="display:none;">Japan</span>
+                    {{ form_widget(form._token) }}
+                    <div class="ec-forgotRole__intro">
+                        <p class="ec-para-normal">{{ '
+                        学校および事務局からの情報共有のもと下記個人情報をあらかじめ登録しております。
+                        <font color="red">パスワード入力欄に半角英数字12文字以上でお好みの文字列をご入力ください。</font>
+                        内容に相違がある場合はお手数ですが下記のお問い合わせ先にその旨ご連絡ください。'|trans|raw|nl2br }}</p>
+                    </div>
+                    <div class="ec-forgotRole__intro_background">
+                        <p class="ec-para-normal-center"><br><b>{{ '個人情報確認にあたってのお問い合わせ先'|trans|nl2br }}</b></p>
+                        {% if is_mobile %}
+                            <p class="ec-para-normal">{{ '登録されている下記の個人情報をご確認ください。登録に誤りがある場合、ご不明な点がある場合はお子様が通われている学校へお問い合わせください。学校より必要に応じて事業者と連携し、対応いたします。
+                            '|trans|nl2br }}</p>
+                        {% else %}
+                            <p class="ec-para-normal">{{ '登録されている下記の個人情報をご確認ください。
+                            登録に誤りがある場合、ご不明な点がある場合はお子様が通われている学校へ
+                            お問い合わせください。学校より必要に応じて事業者と連携し、対応いたします。
+                        '|trans|nl2br }}</p>
+                        {% endif %}
+                        
+                        
+                    </div>
+                    </center>
+                    <div class="ec-borderedDefs">
+                        <dl>
+                            <dt>
+                                {{ form_label(form.name, '保護者氏名', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.name.name01.vars.data }} {# form.vars.value = form.vars.data = Customer #}
+                                {{ form.name.name02.vars.data }}
+                                {{ form_widget(form.name.name01, { type : 'hidden' }) }}
+                                {{ form_widget(form.name.name02, { type : 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.kana, '保護者氏名(カナ)', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.kana.kana01.vars.data }}
+                                {{ form.kana.kana02.vars.data }}
+                                {{ form_widget(form.kana.kana01, { type : 'hidden' }) }}
+                                {{ form_widget(form.kana.kana02, { type : 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.email, 'メールアドレス', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.email.vars.data }}
+                                {{ form_widget(form.email.first, { type : 'hidden' }) }}
+                                {{ form_widget(form.email.second, { type : 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.name, '生徒氏名', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {% if Customer.Children is defined and Customer.Children|length > 0 %}
+                                    {% for Child in Customer.Children %}
+                                        {{ Child.name01 }} &nbsp; {{ Child.name02 }}
+                                    {% endfor %}
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.kana, '生徒氏名(カナ)', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {% if Customer.Children is defined and Customer.Children|length > 0 %}
+                                    {% for Child in Customer.Children %}
+                                        {{ Child.kana01 }} &nbsp; {{ Child.kana02 }}
+                                    {% endfor %}
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.company_name, '学校名', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.company_name.vars.data }}
+                                {{ form_widget(form.company_name, { type : 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.plain_password, 'パスワード', { 'label_attr': {'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                <div class="ec-input{{ has_errors(form.plain_password.first) ? ' error' }}">
+                                    {{ form_widget(form.plain_password.first, {
+                                        'attr': { 'placeholder': '半角英数記号%min%〜%max%文字'|trans({ '%min%': eccube_config.eccube_password_min_len, '%max%': eccube_config.eccube_password_max_len }) },
+                                        'type': 'password'
+                                    }) }}
+                                    {{ form_errors(form.plain_password.first) }}
+                                </div>
+                                <div class="ec-input{{ has_errors(form.plain_password.second) ? ' error' }}">
+                                    {{ form_widget(form.plain_password.second, {
+                                        'attr': { 'placeholder': '確認のためもう一度入力してください'|trans },
+                                        'type': 'password'
+                                    }) }}
+                                    {{ form_errors(form.plain_password.second) }}
+                                </div>
+                            </dd>
+                        </dl>
+                        {# エンティティ拡張の自動出力 #}
+                        {% for f in form|filter(f => f.vars.eccube_form_options.auto_render) %}
+                            {% if f.vars.eccube_form_options.form_theme %}
+                                {% form_theme f f.vars.eccube_form_options.form_theme %}
+                                {{ form_row(f) }}
+                            {% else %}
+                                <dl>
+                                    <dt>
+                                        {% set label_class =  f.vars.label_attr.class is defined ? f.vars.label_attr.class : '' %}
+                                        {{ form_label(f, f.vars.label, { 'label_attr': {'class': label_class ~ ' ec-label' }}) }}
+                                    </dt>
+                                    <dd>
+                                        <div class="{{ f.vars.eccube_form_options.style_class }}{{ has_errors(f) ? ' error' }}">
+                                            {{ form_widget(f) }}
+                                            {{ form_errors(f) }}
+                                        </div>
+                                    </dd>
+                                </dl>
+                            {% endif %}
+                        {% endfor %}
+                    </div>  
+                    <div class="ec-forgotRole__actions">
+                        <div class="ec-off2Grid">
+                            <div class="ec-off2Grid__cell">
+                                <div class="ec-checkbox{{ has_errors(form.user_policy_check) ? ' error' }}">
+                                    <label>
+                                        {{ form_widget(form.user_policy_check) }}
+                                        <a class="ec-link" href="{{ url('help_agreement') }}" target="_blank">ご利用規約</a> 及び <a class="ec-link" href="{{ url('help_privacy') }}" target="_blank">個人情報保護方針</a> に同意してお進みください
+                                    </label>
+                                    {{ form_errors(form.user_policy_check) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ec-forgotRole__actions">
+                        <div class="ec-off4Grid">
+                            <div class="ec-off4Grid__cell">
+                                <button class="ec-blockBtn--action" type="submit" name="mode" value="confirm">{{ '入力内容を確認する'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
