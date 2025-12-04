@@ -174,6 +174,7 @@ file that was distributed with this source code.
                                         {{ form_errors(form.phone_number) }}
                                     </div>
                                 </div>
+                                {% if Customer.id %}
                                 <div class="row mb-2">
                                     <div class="col-3">
                                         <span>{{ 'admin.common.password'|trans }}</span>
@@ -194,6 +195,10 @@ file that was distributed with this source code.
                                         {{ form_errors(form.plain_password.second) }}
                                     </div>
                                 </div>
+                                {% else %}
+                                <input type="hidden" name="admin_customer[plain_password][first]" value="{{ password_for_provisional }}">
+                                <input type="hidden" name="admin_customer[plain_password][second]" value="{{ password_for_provisional }}">
+                                {% endif %}
                                 <div class="row mb-2">
                                     <div class="col-3">
                                         <span>{{ 'admin.common.gender'|trans }}</span>

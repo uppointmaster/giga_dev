@@ -171,6 +171,10 @@ class CustomerEditController extends AbstractController
         // カートに追加できる商品リスト
         $products = $this->cartViewerService->getProductsCanAdd($Customer->getId());
 
+        // パスワード自動生成(仮設定用)
+        $password_length = 12;
+        $password_for_provisional = substr(str_shuffle('1234567890abcdefghijklmnopqrstuvwxyz'), 0, $password_length);
+        
         if ($form->isSubmitted() && $form->isValid()) {
             log_info('会員登録開始', [$Customer->getId()]);
 
@@ -233,6 +237,7 @@ class CustomerEditController extends AbstractController
             'page_count' => $page_count,
             'carts' => $carts,
             'products' => $products,
+            'password_for_provisional' => $password_for_provisional,
         ];
     }
 }
