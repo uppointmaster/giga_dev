@@ -339,6 +339,64 @@ class MailService
     }
 
     /**
+     * Send repay mail.
+     *
+     * @param $formData 弁済情報通知用メールアドレス確認内容
+     */
+    public function sendRepayMail($formData)
+    {
+        log_info('弁済情報通知用メールアドレス確認メール送信開始');
+
+        $MailTemplate = $this->mailTemplateRepository->find($this->eccubeConfig['eccube_contact_mail_template_id']);
+
+        $body = $this->twig->render($MailTemplate->getFileName(), [
+            'data' => $formData,
+            'BaseInfo' => $this->BaseInfo,
+        ]);
+
+        // 問い合わせ者にメール送信
+        $message = (new Email())
+            ->subject('['.$this->BaseInfo->getShopName().'] '.$MailTemplate->getMailSubject())
+            ->from(new Address($this->BaseInfo->getEmail02(), $this->BaseInfo->getShopName()))
+            ->to($this->convertRFCViolatingEmail($formData['email']))
+            ->bcc($this->BaseInfo->getEmail02())
+            ->replyTo($this->BaseInfo->getEmail02())
+            ->returnPath($this->BaseInfo->getEmail04());
+
+        // HTMLテンプレートが存在する場合
+        $htmlFileName = $this->getHtmlTemplate($MailTemplate->getFileName());
+        if (!is_null($htmlFileName)) {
+            $htmlBody = $this->twig->render($htmlFileName, [
+                'data' => $formData,
+                'BaseInfo' => $this->BaseInfo,
+            ]);
+
+            $message
+                ->text($body)
+                ->html($htmlBody);
+        } else {
+            $message->text($body);
+        }
+
+        $event = new EventArgs(
+            [
+                'message' => $message,
+                'formData' => $formData,
+                'BaseInfo' => $this->BaseInfo,
+            ],
+            null
+        );
+        $this->eventDispatcher->dispatch($event, EccubeEvents::MAIL_CONTACT);
+
+        try {
+            $this->mailer->send($message);
+            log_info('弁済情報通知用メールアドレス確認メール送信完了');
+        } catch (TransportExceptionInterface $e) {
+            log_critical($e->getMessage());
+        }
+    }
+
+    /**
      * Send order mail.
      *
      * @param \Eccube\Entity\Order $Order 受注情報

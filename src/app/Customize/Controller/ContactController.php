@@ -20,7 +20,7 @@ use Eccube\Event\EventArgs;
 use Eccube\Form\Type\Front\ContactType;
 use Customize\Form\Type\Front\ContactRepayType;
 use Eccube\Repository\PageRepository;
-use Eccube\Service\MailService;
+use Customize\Service\MailService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -146,7 +146,7 @@ class ContactController extends AbstractController
      * @Route("/contact/repay", name="contact_repay_confirm", methods={"GET", "POST"})
      * @Template("Contact/repay_index.twig")
      */
-    public function repaly(Request $request)
+    public function repay(Request $request)
     {
         $builder = $this->formFactory->createBuilder(ContactRepayType::class);
 
@@ -202,7 +202,7 @@ class ContactController extends AbstractController
                     $data = $event->getArgument('data');
 
                     // メール送信
-                    $this->mailService->sendContactMail($data);
+                    $this->mailService->sendRepayMail($data);
 
                     return $this->redirect($this->generateUrl('contact_repay_complete'));
             }
