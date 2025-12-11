@@ -376,7 +376,7 @@ class ForgotController extends AbstractController
                 $this->mailService->sendForgotAuthNotificationMail($Customer, $reset_code);
 
                 // ログ出力
-                log_info('send auth number mail to:'."{$Customer->getId()} {$Customer->getEmail()} {$request->getClientIp()}");
+                log_info('本人認証メール送信先 ID:'."{$Customer->getId()} {$Customer->getEmail()} {$request->getClientIp()}");
             
                 return $this->redirectToRoute('forgot_auth', ['key' => $Customer->getSecretKey()]);
             
@@ -390,6 +390,12 @@ class ForgotController extends AbstractController
 
                 // メールアドレスから仮会員データが取得できない場合
                 $error = trans('front.forgot.email_not_found');
+
+                // ログ出力(エラーメッセージ・入力内容)
+                log_info(
+                    '本人認証情報入力',
+                    [$error => $form->get('login_email')->getData()]
+                );
             }        
         }
 
@@ -461,13 +467,14 @@ class ForgotController extends AbstractController
                 return $this->redirectToRoute('forgot_entry', ['key' => $form->get('auth_number')->getData()]);
            
             } else {
-                log_warning(
-                    'auth number is input: ',
-                    ['Enter email' => $form->get('login_email')->getData()]
-                );
-
                 // エラーメッセージ
                 $error = trans('front.forgot.auth_number_not_match');
+
+                // ログ出力(エラーメッセージ・入力内容)
+                log_info(
+                    '本人認証',
+                    [$error => $form->get('auth_number')->getData()]
+                );
 
                 $Customer = $this->customerRepository
                     ->getProvisionalCustomerByEmail($form->get('login_email')->getData());
@@ -528,7 +535,7 @@ class ForgotController extends AbstractController
                 $this->mailService->sendForgotAuthNotificationMail($Customer, $reset_code);
 
                 // ログ出力
-                log_info('send auth number mail to:'."{$Customer->getId()} {$Customer->getEmail()} {$request->getClientIp()}");
+                log_info('本人認証メール送信先 ID:'."{$Customer->getId()} {$Customer->getEmail()} {$request->getClientIp()}");
             
                 return $this->redirectToRoute('forgot_auth', ['key' => $Customer->getSecretKey()]);
             
