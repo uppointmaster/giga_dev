@@ -405,7 +405,7 @@ class MailService
      */
     public function sendOrderMail(Order $Order)
     {
-        log_info('受注メール送信開始');
+        log_info('弁済メール送信開始');
 
         $MailTemplate = $this->mailTemplateRepository->find($this->eccubeConfig['eccube_order_mail_template_id']);
 
@@ -466,7 +466,7 @@ class MailService
 
         $this->mailHistoryRepository->save($MailHistory);
 
-        log_info('受注メール送信完了');
+        log_info('弁済メール送信完了');
 
         return $message;
     }

@@ -118,7 +118,7 @@ class ShoppingController extends AbstractShoppingController
     }
 
     /**
-     * 注文手続き画面を表示する
+     * 弁済手続き画面を表示する
      *
      * 未ログインまたはRememberMeログインの場合はログイン画面に遷移させる.
      * ただし、非会員でお客様情報を入力済の場合は遷移させない.
@@ -135,7 +135,7 @@ class ShoppingController extends AbstractShoppingController
     {
         // ログイン状態のチェック.
         if ($this->orderHelper->isLoginRequired()) {
-            log_info('[注文手続] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
+            log_info('[弁済手続] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
 
             return $this->redirectToRoute('shopping_login');
         }
@@ -143,39 +143,39 @@ class ShoppingController extends AbstractShoppingController
         // カートチェック.
         $Cart = $this->cartService->getCart();
         if (!($Cart && $this->orderHelper->verifyCart($Cart))) {
-            log_info('[注文手続] カートが購入フローへ遷移できない状態のため, カート画面に遷移します.');
+            log_info('[弁済手続] カートが購入フローへ遷移できない状態のため, カート画面に遷移します.');
 
             return $this->redirectToRoute('cart');
         }
 
         // 受注の初期化.
-        log_info('[注文手続] 受注の初期化処理を開始します.');
+        log_info('[弁済手続] 受注の初期化処理を開始します.');
         $Customer = $this->getUser() ? $this->getUser() : $this->orderHelper->getNonMember();
         $Order = $this->orderHelper->initializeOrder($Cart, $Customer);
 
         // 集計処理.
-        log_info('[注文手続] 集計処理を開始します.', [$Order->getId()]);
+        log_info('[弁済手続] 集計処理を開始します.', [$Order->getId()]);
         $flowResult = $this->executePurchaseFlow($Order, false);
         $this->entityManager->flush();
 
         if ($flowResult->hasError()) {
-            log_info('[注文手続] Errorが発生したため購入エラー画面へ遷移します.', [$flowResult->getErrors()]);
+            log_info('[弁済手続] Errorが発生したため購入エラー画面へ遷移します.', [$flowResult->getErrors()]);
 
             return $this->redirectToRoute('shopping_error');
         }
 
         if ($flowResult->hasWarning()) {
-            log_info('[注文手続] Warningが発生しました.', [$flowResult->getWarning()]);
+            log_info('[弁済手続] Warningが発生しました.', [$flowResult->getWarning()]);
 
             // 受注明細と同期をとるため, CartPurchaseFlowを実行する
             $cartPurchaseFlow->validate($Cart, new PurchaseContext($Cart, $this->getUser()));
 
-            // 注文フローで取得されるカートの入れ替わりを防止する
+            // 弁済フローで取得されるカートの入れ替わりを防止する
             // @see https://github.com/EC-CUBE/ec-cube/issues/4293
             $this->cartService->setPrimary($Cart->getCartKey());
         }
 
-        // マイページで会員情報が更新されていれば, Orderの注文者情報も更新する.
+        // マイページで会員情報が更新されていれば, Orderの弁済者情報も更新する.
         if ($Customer->getId()) {
             $this->orderHelper->updateCustomerInfo($Order, $Customer);
             $this->entityManager->flush();
@@ -206,7 +206,7 @@ class ShoppingController extends AbstractShoppingController
      * <button data-trigger="click" data-path="path('ルーティング')">更新する</button>
      *
      * data-triggerは, click/change/blur等のイベント名を指定してください。
-     * data-pathは任意のパラメータです. 指定しない場合, 注文手続き画面へリダイレクトします.
+     * data-pathは任意のパラメータです. 指定しない場合, 弁済手続き画面へリダイレクトします.
      *
      * @Route("/shopping/redirect_to", name="shopping_redirect_to", methods={"POST"})
      * @Template("Shopping/index.twig")
@@ -243,7 +243,7 @@ class ShoppingController extends AbstractShoppingController
 
             $redirectTo = $form['redirect_to']->getData();
             if (empty($redirectTo)) {
-                log_info('[リダイレクト] リダイレクト先未指定のため注文手続き画面へ遷移します.');
+                log_info('[リダイレクト] リダイレクト先未指定のため弁済手続き画面へ遷移します.');
 
                 return $this->redirectToRoute('shopping');
             }
@@ -271,7 +271,7 @@ class ShoppingController extends AbstractShoppingController
 
         $activeTradeLaws = $this->tradeLawRepository->findBy(['displayOrderScreen' => true], ['sortNo' => 'ASC']);
 
-        log_info('[リダイレクト] フォームエラーのため, 注文手続き画面を表示します.', [$Order->getId()]);
+        log_info('[リダイレクト] フォームエラーのため, 弁済手続き画面を表示します.', [$Order->getId()]);
 
         return [
             'form' => $form->createView(),
@@ -281,11 +281,11 @@ class ShoppingController extends AbstractShoppingController
     }
 
     /**
-     * 注文確認画面を表示する.
+     * 弁済確認画面を表示する.
      *
      * ここではPaymentMethod::verifyがコールされます.
-     * PaymentMethod::verifyではクレジットカードの有効性チェック等, 注文手続きを進められるかどうかのチェック処理を行う事を想定しています.
-     * PaymentMethod::verifyでエラーが発生した場合は, 注文手続き画面へリダイレクトします.
+     * PaymentMethod::verifyではクレジットカードの有効性チェック等, 弁済手続きを進められるかどうかのチェック処理を行う事を想定しています.
+     * PaymentMethod::verifyでエラーが発生した場合は, 弁済手続き画面へリダイレクトします.
      *
      * @Route("/shopping/confirm", name="shopping_confirm", methods={"POST"})
      * @Template("Shopping/confirm.twig")
@@ -294,7 +294,7 @@ class ShoppingController extends AbstractShoppingController
     {
         // ログイン状態のチェック.
         if ($this->orderHelper->isLoginRequired()) {
-            log_info('[注文確認] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
+            log_info('[弁済確認] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
 
             return $this->redirectToRoute('shopping_login');
         }
@@ -303,7 +303,7 @@ class ShoppingController extends AbstractShoppingController
         $preOrderId = $this->cartService->getPreOrderId();
         $Order = $this->orderHelper->getPurchaseProcessingOrder($preOrderId);
         if (!$Order) {
-            log_info('[注文確認] 購入処理中の受注が存在しません.', [$preOrderId]);
+            log_info('[弁済確認] 購入処理中の受注が存在しません.', [$preOrderId]);
 
             return $this->redirectToRoute('shopping_error');
         }
@@ -313,7 +313,7 @@ class ShoppingController extends AbstractShoppingController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            log_info('[注文確認] 集計処理を開始します.', [$Order->getId()]);
+            log_info('[弁済確認] 集計処理を開始します.', [$Order->getId()]);
             $response = $this->executePurchaseFlow($Order);
             $this->entityManager->flush();
 
@@ -321,24 +321,24 @@ class ShoppingController extends AbstractShoppingController
                 return $response;
             }
 
-            log_info('[注文確認] IPベースのスロットリングを実行します.');
+            log_info('[弁済確認] IPベースのスロットリングを実行します.');
             $ipLimiter = $this->shoppingConfirmIpLimiter->create($request->getClientIp());
             if (!$ipLimiter->consume()->isAccepted()) {
-                log_info('[注文確認] 試行回数制限を超過しました(IPベース)');
+                log_info('[弁済確認] 試行回数制限を超過しました(IPベース)');
                 throw new TooManyRequestsHttpException();
             }
 
             $Customer = $this->getUser();
             if ($Customer instanceof Customer) {
-                log_info('[注文確認] 会員ベースのスロットリングを実行します.');
+                log_info('[弁済確認] 会員ベースのスロットリングを実行します.');
                 $customerLimiter = $this->shoppingConfirmCustomerLimiter->create($Customer->getId());
                 if (!$customerLimiter->consume()->isAccepted()) {
-                    log_info('[注文確認] 試行回数制限を超過しました(会員ベース)');
+                    log_info('[弁済確認] 試行回数制限を超過しました(会員ベース)');
                     throw new TooManyRequestsHttpException();
                 }
             }
 
-            log_info('[注文確認] PaymentMethod::verifyを実行します.', [$Order->getPayment()->getMethodClass()]);
+            log_info('[弁済確認] PaymentMethod::verifyを実行します.', [$Order->getPayment()->getMethodClass()]);
             $paymentMethod = $this->createPaymentMethod($Order, $form);
             $PaymentResult = $paymentMethod->verify();
 
@@ -349,7 +349,7 @@ class ShoppingController extends AbstractShoppingController
                         $this->addError($error);
                     }
 
-                    log_info('[注文確認] PaymentMethod::verifyのエラーのため, 注文手続き画面へ遷移します.', [$PaymentResult->getErrors()]);
+                    log_info('[弁済確認] PaymentMethod::verifyのエラーのため, 弁済手続き画面へ遷移します.', [$PaymentResult->getErrors()]);
 
                     return $this->redirectToRoute('shopping');
                 }
@@ -358,7 +358,7 @@ class ShoppingController extends AbstractShoppingController
                 if ($response instanceof Response && ($response->isRedirection() || $response->isSuccessful())) {
                     $this->entityManager->flush();
 
-                    log_info('[注文確認] PaymentMethod::verifyが指定したレスポンスを表示します.');
+                    log_info('[弁済確認] PaymentMethod::verifyが指定したレスポンスを表示します.');
 
                     return $response;
                 }
@@ -366,7 +366,7 @@ class ShoppingController extends AbstractShoppingController
 
             $this->entityManager->flush();
 
-            log_info('[注文確認] 注文確認画面を表示します.');
+            log_info('[弁済確認] 弁済確認画面を表示します.');
 
             return [
                 'form' => $form->createView(),
@@ -375,7 +375,7 @@ class ShoppingController extends AbstractShoppingController
             ];
         }
 
-        log_info('[注文確認] フォームエラーのため, 注文手続画面を表示します.', [$Order->getId()]);
+        log_info('[弁済確認] フォームエラーのため, 弁済手続画面を表示します.', [$Order->getId()]);
 
         $template = new Template([
             'owner' => [$this, 'confirm'],
@@ -391,9 +391,9 @@ class ShoppingController extends AbstractShoppingController
     }
 
     /**
-     * 注文処理を行う.
+     * 弁済処理を行う.
      *
-     * 決済プラグインによる決済処理および注文の確定処理を行います.
+     * 決済プラグインによる決済処理および弁済の確定処理を行います.
      *
      * @Route("/shopping/checkout", name="shopping_checkout", methods={"POST"})
      * @Template("Shopping/confirm.twig")
@@ -402,7 +402,7 @@ class ShoppingController extends AbstractShoppingController
     {
         // ログイン状態のチェック.
         if ($this->orderHelper->isLoginRequired()) {
-            log_info('[注文処理] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
+            log_info('[弁済処理] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
 
             return $this->redirectToRoute('shopping_login');
         }
@@ -411,26 +411,26 @@ class ShoppingController extends AbstractShoppingController
         $preOrderId = $this->cartService->getPreOrderId();
         $Order = $this->orderHelper->getPurchaseProcessingOrder($preOrderId);
         if (!$Order) {
-            log_info('[注文処理] 購入処理中の受注が存在しません.', [$preOrderId]);
+            log_info('[弁済処理] 購入処理中の受注が存在しません.', [$preOrderId]);
 
             return $this->redirectToRoute('shopping_error');
         }
 
         // フォームの生成.
         $form = $this->createForm(OrderType::class, $Order, [
-            // 確認画面から注文処理へ遷移する場合は, Orderエンティティで値を引き回すためフォーム項目の定義をスキップする.
+            // 確認画面から弁済処理へ遷移する場合は, Orderエンティティで値を引き回すためフォーム項目の定義をスキップする.
             'skip_add_form' => true,
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            log_info('[注文処理] 注文処理を開始します.', [$Order->getId()]);
+            log_info('[弁済処理] 弁済処理を開始します.', [$Order->getId()]);
 
             try {
                 /*
                  * 集計処理
                  */
-                log_info('[注文処理] 集計処理を開始します.', [$Order->getId()]);
+                log_info('[弁済処理] 集計処理を開始します.', [$Order->getId()]);
                 $response = $this->executePurchaseFlow($Order);
                 $this->entityManager->flush();
 
@@ -438,30 +438,30 @@ class ShoppingController extends AbstractShoppingController
                     return $response;
                 }
 
-                log_info('[注文完了] IPベースのスロットリングを実行します.');
+                log_info('[弁済完了] IPベースのスロットリングを実行します.');
                 $ipLimiter = $this->shoppingCheckoutIpLimiter->create($request->getClientIp());
                 if (!$ipLimiter->consume()->isAccepted()) {
-                    log_info('[注文完了] 試行回数制限を超過しました(IPベース)');
+                    log_info('[弁済完了] 試行回数制限を超過しました(IPベース)');
                     throw new TooManyRequestsHttpException();
                 }
 
                 $Customer = $this->getUser();
                 if ($Customer instanceof Customer) {
-                    log_info('[注文完了] 会員ベースのスロットリングを実行します.');
+                    log_info('[弁済完了] 会員ベースのスロットリングを実行します.');
                     $customerLimiter = $this->shoppingCheckoutCustomerLimiter->create($Customer->getId());
                     if (!$customerLimiter->consume()->isAccepted()) {
-                        log_info('[注文完了] 試行回数制限を超過しました(会員ベース)');
+                        log_info('[弁済完了] 試行回数制限を超過しました(会員ベース)');
                         throw new TooManyRequestsHttpException();
                     }
                 }
 
-                log_info('[注文処理] PaymentMethodを取得します.', [$Order->getPayment()->getMethodClass()]);
+                log_info('[弁済処理] PaymentMethodを取得します.', [$Order->getPayment()->getMethodClass()]);
                 $paymentMethod = $this->createPaymentMethod($Order, $form);
 
                 /*
                  * 決済実行(前処理)
                  */
-                log_info('[注文処理] PaymentMethod::applyを実行します.');
+                log_info('[弁済処理] PaymentMethod::applyを実行します.');
                 if ($response = $this->executeApply($paymentMethod)) {
                     return $response;
                 }
@@ -471,16 +471,16 @@ class ShoppingController extends AbstractShoppingController
                  *
                  * PaymentMethod::checkoutでは決済処理が行われ, 正常に処理出来た場合はPurchaseFlow::commitがコールされます.
                  */
-                log_info('[注文処理] PaymentMethod::checkoutを実行します.');
+                log_info('[弁済処理] PaymentMethod::checkoutを実行します.');
                 if ($response = $this->executeCheckout($paymentMethod)) {
                     return $response;
                 }
 
                 $this->entityManager->flush();
 
-                log_info('[注文処理] 注文処理が完了しました.', [$Order->getId()]);
+                log_info('[弁済処理] 弁済処理が完了しました.', [$Order->getId()]);
             } catch (ShoppingException $e) {
-                log_error('[注文処理] 購入エラーが発生しました.', [$e->getMessage()]);
+                log_error('[弁済処理] 購入エラーが発生しました.', [$e->getMessage()]);
 
                 $this->entityManager->rollback();
 
@@ -488,7 +488,7 @@ class ShoppingController extends AbstractShoppingController
 
                 return $this->redirectToRoute('shopping_error');
             } catch (\Exception $e) {
-                log_error('[注文処理] 予期しないエラーが発生しました.', [$e->getMessage()]);
+                log_error('[弁済処理] 予期しないエラーが発生しました.', [$e->getMessage()]);
 
                 // $this->entityManager->rollback(); FIXME ユニットテストで There is no active transaction エラーになってしまう
 
@@ -498,23 +498,23 @@ class ShoppingController extends AbstractShoppingController
             }
 
             // カート削除
-            log_info('[注文処理] カートをクリアします.', [$Order->getId()]);
+            log_info('[弁済処理] カートをクリアします.', [$Order->getId()]);
             $this->cartService->clear();
 
             // 受注IDをセッションにセット
             $this->session->set(OrderHelper::SESSION_ORDER_ID, $Order->getId());
 
             // メール送信
-            log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+            log_info('[弁済処理] 弁済メールの送信を行います.', [$Order->getId()]);
             $this->mailService->sendOrderMail($Order);
             $this->entityManager->flush();
 
-            log_info('[注文処理] 注文処理が完了しました. 購入完了画面へ遷移します.', [$Order->getId()]);
+            log_info('[弁済処理] 弁済処理が完了しました. 弁済完了画面へ遷移します.', [$Order->getId()]);
 
             return $this->redirectToRoute('shopping_complete');
         }
 
-        log_info('[注文処理] フォームエラーのため, 購入エラー画面へ遷移します.', [$Order->getId()]);
+        log_info('[弁済処理] フォームエラーのため, 購入エラー画面へ遷移します.', [$Order->getId()]);
 
         return $this->redirectToRoute('shopping_error');
     }
@@ -527,13 +527,13 @@ class ShoppingController extends AbstractShoppingController
      */
     public function complete(Request $request)
     {
-        log_info('[注文完了] 注文完了画面を表示します.');
+        log_info('[弁済完了] 弁済完了画面を表示します.');
 
         // 受注IDを取得
         $orderId = $this->session->get(OrderHelper::SESSION_ORDER_ID);
 
         if (empty($orderId)) {
-            log_info('[注文完了] 受注IDを取得できないため, トップページへ遷移します.');
+            log_info('[弁済完了] 受注IDを取得できないため, トップページへ遷移します.');
 
             return $this->redirectToRoute('homepage');
         }
@@ -552,12 +552,12 @@ class ShoppingController extends AbstractShoppingController
             return $event->getResponse();
         }
 
-        log_info('[注文完了] 購入フローのセッションをクリアします. ');
+        log_info('[弁済完了] 購入フローのセッションをクリアします. ');
         $this->orderHelper->removeSession();
 
         $hasNextCart = !empty($this->cartService->getCarts());
 
-        log_info('[注文完了] 注文完了画面を表示しました. ', [$hasNextCart]);
+        log_info('[弁済完了] 弁済完了画面を表示しました. ', [$hasNextCart]);
 
         return [
             'Order' => $Order,
@@ -642,7 +642,7 @@ class ShoppingController extends AbstractShoppingController
     /**
      * お届け先の新規作成または編集画面.
      *
-     * 会員時は新しいお届け先を作成し, 作成したお届け先を選択状態にして注文手続き画面へ遷移する.
+     * 会員時は新しいお届け先を作成し, 作成したお届け先を選択状態にして弁済手続き画面へ遷移する.
      * 非会員時は選択されたお届け先の編集を行う.
      *
      * @Route("/shopping/shipping_edit/{id}", name="shopping_shipping_edit", requirements={"id" = "\d+"}, methods={"GET", "POST"})
@@ -857,20 +857,20 @@ class ShoppingController extends AbstractShoppingController
 
             // dispatcherがresponseを保持している場合はresponseを返す
             if ($response instanceof Response && ($response->isRedirection() || $response->isSuccessful())) {
-                log_info('[注文処理] PaymentMethod::applyが指定したレスポンスを表示します.');
+                log_info('[弁済処理] PaymentMethod::applyが指定したレスポンスを表示します.');
 
                 return $response;
             }
 
             // forwardすることも可能.
             if ($dispatcher->isForward()) {
-                log_info('[注文処理] PaymentMethod::applyによりForwardします.',
+                log_info('[弁済処理] PaymentMethod::applyによりForwardします.',
                     [$dispatcher->getRoute(), $dispatcher->getPathParameters(), $dispatcher->getQueryParameters()]);
 
                 return $this->forwardToRoute($dispatcher->getRoute(), $dispatcher->getPathParameters(),
                     $dispatcher->getQueryParameters());
             } else {
-                log_info('[注文処理] PaymentMethod::applyによりリダイレクトします.',
+                log_info('[弁済処理] PaymentMethod::applyによりリダイレクトします.',
                     [$dispatcher->getRoute(), $dispatcher->getPathParameters(), $dispatcher->getQueryParameters()]);
 
                 return $this->redirectToRoute($dispatcher->getRoute(),
@@ -893,7 +893,7 @@ class ShoppingController extends AbstractShoppingController
         // PaymentResultがresponseを保持している場合はresponseを返す
         if ($response instanceof Response && ($response->isRedirection() || $response->isSuccessful())) {
             $this->entityManager->flush();
-            log_info('[注文処理] PaymentMethod::checkoutが指定したレスポンスを表示します.');
+            log_info('[弁済処理] PaymentMethod::checkoutが指定したレスポンスを表示します.');
 
             return $response;
         }
@@ -905,7 +905,7 @@ class ShoppingController extends AbstractShoppingController
                 $this->addError($error);
             }
 
-            log_info('[注文処理] PaymentMethod::checkoutのエラーのため, 購入エラー画面へ遷移します.', [$PaymentResult->getErrors()]);
+            log_info('[弁済処理] PaymentMethod::checkoutのエラーのため, 購入エラー画面へ遷移します.', [$PaymentResult->getErrors()]);
 
             return $this->redirectToRoute('shopping_error');
         }
